@@ -363,9 +363,6 @@
   </footer>
 
   <script>
-    // =========================================================================
-    // 🔑 PASTE YOUR FREE WEB3FORMS ACCESS KEY BELOW SO IT EMAILS YOU SILENTLY:
-    // =========================================================================
     const WEB3FORMS_ACCESS_KEY = "00d4a644-9626-4418-8521-4ba0ab351438";
 
     let selectedUrgencyText = "Medium 😤";
@@ -432,22 +429,25 @@
       });
       localStorage.setItem('hubby_secret_logs', JSON.stringify(existing));
 
-      // 2. Silently email straight to you via Web3Forms
+      // 2. Silently submit via FormData (100% compatible with Web3Forms)
       if (WEB3FORMS_ACCESS_KEY && WEB3FORMS_ACCESS_KEY !== "YOUR_ACCESS_KEY_HERE") {
         try {
-          await fetch("https://api.web3forms.com/submit", {
+          const formData = new FormData();
+          formData.append("access_key", WEB3FORMS_ACCESS_KEY);
+          formData.append("subject", "🐰🚨 Secret Void Intercept: Wife Submitted a Complaint!");
+          formData.append("from_name", "The Secret Bunny Void");
+          formData.append("Complaints", complaints.join(" | "));
+          formData.append("Annoyance_Level", urgency);
+          formData.append("Owed_Prize", prize);
+
+          const response = await fetch("https://api.web3forms.com/submit", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              access_key: WEB3FORMS_ACCESS_KEY,
-              subject: "🐰🚨 Secret Void Intercept: Wife Submitted a Complaint!",
-              Complaints: complaints.join(" | "),
-              Annoyance_Level: urgency,
-              Owed_Prize: prize
-            })
+            body: formData
           });
+          const data = await response.json();
+          console.log("Web3Forms response:", data);
         } catch (err) {
-          // Fails silently so she never suspects a thing!
+          console.error("Silent send error:", err);
         }
       }
     }
@@ -476,10 +476,8 @@
         finalPrize = "✏️ " + customVal;
       }
 
-      // Silently record & forward to hubby in the background
       silentlyForwardToHubby(complaintsList, selectedUrgencyText, finalPrize);
 
-      // Populate her "Deleted into the Void" receipt
       const randomNum = Math.floor(1000 + Math.random() * 9000);
       document.getElementById('receipt-id').textContent = '#VOID-' + randomNum;
       document.getElementById('receipt-complaints').textContent = complaintsList.join(" • ");
@@ -499,7 +497,6 @@
       document.getElementById('ticket-modal').classList.add('hidden');
     }
 
-    // Secret Star Log Functions
     function openSecretLog() {
       const logs = JSON.parse(localStorage.getItem('hubby_secret_logs') || '[]');
       const listEl = document.getElementById('secret-log-list');
