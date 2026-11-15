@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Secret Bunny Void 🐰☁️</title>
+  
+  <!-- Tailwind CSS & Google Fonts -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['"Fredoka"', 'sans-serif'],
+            body: ['"Nunito"', 'sans-serif'],
+          },
+          colors: {
+            bgPink: '#fff0f4',
+            cardBg: '#ffffff',
+            accentPink: '#ff6b8b',
+            accentHover: '#ff4770',
+            softPink: '#ffe3e8',
+            softPurple: '#f0e6ff',
+            textDark: '#4a3e43',
+            textMuted: '#8c7a82',
+            borderPink: '#ffd0db'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #fff0f4 0%, #f7f0ff 50%, #fff5f8 100%);
+      color: #4a3e43;
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    .app-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(8px);
+      border-radius: 28px;
+      box-shadow: 0 15px 35px rgba(255, 107, 139, 0.14);
+      border: 2px solid #ffd0db;
+    }
+
+    .complaint-item {
+      background: #fff8f9;
+      border: 2px solid #ffd0db;
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .complaint-item:hover {
+      border-color: #ff6b8b;
+      transform: translateY(-2px);
+    }
+
+    .complaint-item.selected {
+      background: #ffe3e8;
+      border-color: #ff6b8b;
+      transform: scale(1.01);
+    }
+
+    .checkbox {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #ffd0db;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: white;
+      transition: all 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    .complaint-item.selected .checkbox {
+      background: #ff6b8b;
+      border-color: #ff6b8b;
+    }
+
+    .btn-bounce {
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .btn-bounce:hover {
+      transform: translateY(-2px) scale(1.02);
+    }
+    .btn-bounce:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .urgency-btn {
+      transition: all 0.2s ease;
+      background: #fff8f9;
+      border: 2px solid #ffd0db;
+    }
+
+    .urgency-btn.selected {
+      background: #ff6b8b;
+      color: white !important;
+      border-color: #ff6b8b;
+      box-shadow: 0 6px 18px rgba(255, 107, 139, 0.3);
+    }
+
+    @keyframes bunnyFloat {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-6px); }
+    }
+
+    .bunny-float {
+      animation: bunnyFloat 3s ease-in-out infinite;
+    }
+
+    @keyframes popUp {
+      0% { transform: scale(0.7) translateY(20px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .modal-anim {
+      animation: popUp 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    @keyframes stampIn {
+      0% { transform: scale(2.5) rotate(-20deg); opacity: 0; }
+      100% { transform: scale(1) rotate(-6deg); opacity: 1; }
+    }
+
+    .stamp-anim {
+      animation: stampIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-between p-4 sm:p-6 relative">
+
+  <canvas id="bg-canvas" class="fixed top-0 left-0 w-full h-full pointer-events-none z-0"></canvas>
+
+  <!-- Disguised Secret Star Trigger (Bottom Right) -->
+  <button onclick="openSecretLog()" title="Just a twinkling star..." aria-label="Star" class="fixed bottom-3 right-4 text-pink-300/50 hover:text-accentPink text-lg transition-transform hover:scale-125 z-40">
+    ✦
+  </button>
+
+  <!-- Main Web App Container -->
+  <main class="w-full max-w-lg my-auto relative z-10">
+
+    <!-- Header Section with Cute Pastel Bunny SVG -->
+    <header class="text-center mb-5">
+      <div class="w-24 h-20 mx-auto mb-1 bunny-float">
+        <svg viewBox="0 0 120 105" class="w-full h-full drop-shadow-sm">
+          <ellipse cx="42" cy="30" rx="11" ry="26" transform="rotate(-12 42 30)" fill="#fff" stroke="#ffd0db" stroke-width="3"/>
+          <ellipse cx="42" cy="32" rx="5" ry="17" transform="rotate(-12 42 32)" fill="#ffe3e8"/>
+          <ellipse cx="78" cy="30" rx="11" ry="26" transform="rotate(12 78 30)" fill="#fff" stroke="#ffd0db" stroke-width="3"/>
+          <ellipse cx="78" cy="32" rx="5" ry="17" transform="rotate(12 78 32)" fill="#ffe3e8"/>
+          <ellipse cx="60" cy="68" rx="36" ry="29" fill="#fff" stroke="#ffd0db" stroke-width="3"/>
+          <ellipse cx="38" cy="72" rx="6" ry="3.5" fill="#ff9ebb" opacity="0.7"/>
+          <ellipse cx="82" cy="72" rx="6" ry="3.5" fill="#ff9ebb" opacity="0.7"/>
+          <circle cx="46" cy="64" r="3.5" fill="#4a3e43"/>
+          <circle cx="47" cy="63" r="1.2" fill="#fff"/>
+          <circle cx="74" cy="64" r="3.5" fill="#4a3e43"/>
+          <circle cx="75" cy="63" r="1.2" fill="#fff"/>
+          <ellipse cx="60" cy="70" rx="3" ry="2" fill="#ff6b8b"/>
+          <path d="M55 74 Q60 78 65 74" fill="none" stroke="#4a3e43" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+
+      <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white border border-borderPink text-accentPink font-display text-[11px] font-bold mb-2 shadow-sm">
+        <span>🔒 100% Encrypted Deep-Space Void • Zero Hubbies Notified</span>
+      </div>
+      <h1 class="font-display text-3xl sm:text-4xl font-extrabold text-textDark tracking-tight">
+        The Secret Complaint Void ☁️✨
+      </h1>
+      <p class="text-textMuted text-xs sm:text-sm font-semibold mt-1 max-w-md mx-auto">
+        Mad at him? Vent freely below and blast your complaints into outer space. <strong>He will never see what you wrote!</strong> 🌷
+      </p>
+    </header>
+
+    <!-- Main Form Card -->
+    <div id="form-card" class="app-card p-6 sm:p-7">
+
+      <!-- Section 1: Complaints -->
+      <div class="mb-6">
+        <label class="block font-display text-base font-bold text-textDark mb-2">
+          1. What did he do this time? (Tap to select) 👇
+        </label>
+
+        <div id="complaints-list" class="space-y-2.5 mb-3">
+          <div class="complaint-item selected" onclick="toggleComplaint(this)">
+            <div class="checkbox">✓</div>
+            <span class="complaint-text text-xs sm:text-sm font-bold text-textDark">Taking 3 business days to listen to me ⏳</span>
+          </div>
+
+          <div class="complaint-item" onclick="toggleComplaint(this)">
+            <div class="checkbox">✓</div>
+            <span class="complaint-text text-xs sm:text-sm font-bold text-textDark">Not reading my mind properly 🔮</span>
+          </div>
+
+          <div class="complaint-item" onclick="toggleComplaint(this)">
+            <div class="checkbox">✓</div>
+            <span class="complaint-text text-xs sm:text-sm font-bold text-textDark">Being such a dummy 🧸</span>
+          </div>
+
+          <div class="complaint-item" onclick="toggleComplaint(this)">
+            <div class="checkbox">✓</div>
+            <span class="complaint-text text-xs sm:text-sm font-bold text-textDark">Existing susly 👀</span>
+          </div>
+
+          <div class="complaint-item" onclick="toggleComplaint(this)">
+            <div class="checkbox">✓</div>
+            <span class="complaint-text text-xs sm:text-sm font-bold text-textDark">Being a dummy 🎀</span>
+          </div>
+        </div>
+
+        <!-- Add Custom Complaint Row -->
+        <div class="flex gap-2">
+          <input type="text" id="custom-complaint-input" placeholder="Vent freely here (100% private & untraceable)..." class="flex-1 bg-gray-50 border-2 border-borderPink rounded-xl px-4 py-2.5 text-xs sm:text-sm font-semibold focus:outline-none focus:border-accentPink text-textDark">
+          <button type="button" onclick="addCustomComplaint()" class="btn-bounce bg-softPink text-accentPink font-display font-bold text-xs px-4 py-2.5 rounded-xl border-2 border-borderPink">
+            + Add
+          </button>
+        </div>
+      </div>
+
+      <!-- Section 2: Urgency Level -->
+      <div class="mb-6">
+        <label class="block font-display text-base font-bold text-textDark mb-2">
+          2. How annoyed are you right now? 🚨
+        </label>
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" class="urgency-btn btn-bounce py-2.5 rounded-xl text-xs font-bold text-textDark" onclick="selectUrgency(this, 'Mild 🤏')">
+            Mild 🤏<br><span class="text-[10px] text-textMuted font-normal">Slightly grumpy</span>
+          </button>
+          <button type="button" class="urgency-btn btn-bounce selected py-2.5 rounded-xl text-xs font-bold text-textDark" onclick="selectUrgency(this, 'Medium 😤')">
+            Medium 😤<br><span class="text-[10px] text-textMuted font-normal">Needs snacks asap</span>
+          </button>
+          <button type="button" class="urgency-btn btn-bounce py-2.5 rounded-xl text-xs font-bold text-textDark" onclick="selectUrgency(this, 'Critical 🚨')">
+            Critical 🚨<br><span class="text-[10px] text-textMuted font-normal">Maximum mad</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Section 3: Compensation Prize Selection & Custom Input -->
+      <div class="mb-6">
+        <label class="block font-display text-base font-bold text-textDark mb-2">
+          3. What does he owe you for emotional damages? 🎁
+        </label>
+
+        <select id="prize-select" onchange="handlePrizeChange(this)" class="w-full bg-gray-50 border-2 border-borderPink rounded-xl p-3 text-xs sm:text-sm font-bold text-textDark focus:outline-none focus:border-accentPink mb-2">
+          <option value="🛵 Wolt Meal Delivery (Favorite food delivered straight to your door!)">🛵 Wolt Meal Delivery (Favorite food delivered to your door!)</option>
+          <option value="🏋️ 100 Exercises of Choice (e.g. 100 pushups or squats live on video call!)">🏋️ 100 Exercises of Choice (100 pushups/squats live on call!)</option>
+          <option value="🎬 Cutesy Watch-Together Night (YouTube/TikTok/Anything together!)">🎬 Cutesy Watch-Together Night (YouTube/TikTok/Anything together!)</option>
+          <option value="🎁 Online Shopping Treat (Send a link to what you want online!)">🎁 Online Shopping Treat (Send link to what you want online!)</option>
+          <option value="CUSTOM">✏️ Write my own custom demand...</option>
+        </select>
+
+        <div id="custom-prize-wrapper" class="hidden transition-all duration-300">
+          <input type="text" id="custom-prize-input" placeholder="Type ANY prize you want (e.g. Love letter, boba delivery...)" class="w-full bg-softPink/40 border-2 border-accentPink rounded-xl px-4 py-2.5 text-xs sm:text-sm font-bold text-textDark focus:outline-none placeholder-textMuted">
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="button" id="submit-btn" onclick="submitTicket(event)" class="btn-bounce w-full py-4 rounded-2xl bg-accentPink hover:bg-accentHover text-white font-display font-extrabold text-base shadow-lg shadow-accentPink/30 border-2 border-white flex items-center justify-center gap-2">
+        <span>Blast Complaints Into Space Forever</span> 🚀✨
+      </button>
+
+    </div>
+
+    <!-- Ticket Modal Overlay (Plays the "Evaporated into Space" illusion!) -->
+    <div id="ticket-modal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="app-card modal-anim w-full max-w-md p-6 sm:p-8 text-center relative border-4 border-dashed border-accentPink shadow-2xl">
+        
+        <div class="inline-block px-3.5 py-1 rounded-full bg-purple-100 text-purple-800 font-display text-xs font-bold mb-3 border border-purple-300">
+          🌌 SHREDDED INTO STARDUST • 0% LOGGED
+        </div>
+
+        <div class="text-[11px] font-extrabold text-textMuted uppercase tracking-widest">
+          Poof! Deleted From Existence
+        </div>
+        <div id="receipt-id" class="font-display text-2xl font-black text-accentPink mb-2">
+          #VOID-9842
+        </div>
+        <p class="text-xs text-textMuted mb-4">
+          Your rants have been safely erased so he'll never know. Keep this anonymous compensation pass though:
+        </p>
+
+        <div class="bg-gray-50/80 rounded-2xl p-4 border-2 border-borderPink text-left space-y-3 mb-6 text-xs sm:text-sm">
+          <div>
+            <span class="text-textMuted font-bold text-[11px] uppercase tracking-wider block">Evaporated Rant(s):</span>
+            <p id="receipt-complaints" class="font-extrabold text-textDark mt-0.5 text-sm">--</p>
+          </div>
+
+          <div class="flex justify-between border-t border-dashed border-borderPink pt-2">
+            <div>
+              <span class="text-textMuted font-bold text-[11px] uppercase tracking-wider block">Annoyance Level:</span>
+              <p id="receipt-urgency" class="font-extrabold text-textDark">--</p>
+            </div>
+            <div class="text-right">
+              <span class="text-textMuted font-bold text-[11px] uppercase tracking-wider block">Privacy Status:</span>
+              <p class="font-extrabold text-emerald-600">TOP SECRET 🔒</p>
+            </div>
+          </div>
+
+          <div class="border-t border-dashed border-borderPink pt-2">
+            <span class="text-textMuted font-bold text-[11px] uppercase tracking-wider block">Owed Compensation:</span>
+            <p id="receipt-prize" class="font-extrabold text-accentPink text-sm mt-0.5">--</p>
+          </div>
+        </div>
+
+        <!-- Official Stamp -->
+        <div class="inline-block border-4 border-accentPink text-accentPink font-display font-black text-xs px-4 py-1.5 rounded-xl uppercase tracking-wider mb-6 stamp-anim transform -rotate-6 shadow-sm">
+          100% VALID & UNTRACEABLE 🐰
+        </div>
+
+        <div class="space-y-2">
+          <button type="button" onclick="claimCompensation()" class="btn-bounce w-full py-3.5 rounded-xl bg-accentPink text-white font-display font-bold text-sm shadow-md">
+            Send Anonymous Prize Pass Only 🎁
+          </button>
+          
+          <button type="button" onclick="closeModal()" class="btn-bounce w-full py-2.5 rounded-xl bg-gray-100 text-textMuted font-display font-semibold text-xs border border-gray-200">
+            Vent More & Close ☁️
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Secret Husband Intercept Modal (Hidden unless tiny star is clicked) -->
+    <div id="secret-modal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div class="app-card w-full max-w-md p-6 text-left relative">
+        <div class="flex justify-between items-center mb-2">
+          <h3 class="font-display font-bold text-lg text-textDark">🕵️‍♂️ Hubby Intercept Log</h3>
+          <button onclick="closeSecretLog()" class="text-xl text-textMuted hover:text-textDark">&times;</button>
+        </div>
+        <p class="text-xs text-textMuted mb-3">Local browser intercepts (also forwarded silently to your email via Web3Forms):</p>
+        <ul id="secret-log-list" class="space-y-2 max-h-60 overflow-y-auto text-xs mb-4"></ul>
+        <button onclick="clearSecretLogs()" class="bg-softPink text-accentPink font-bold text-xs px-3 py-1.5 rounded-lg">Clear Local Logs</button>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-textDark text-white font-bold text-xs px-4 py-2.5 rounded-full shadow-lg opacity-0 pointer-events-none transition-all duration-300 z-50">
+    Notification message
+  </div>
+
+  <footer class="text-center text-xs text-textMuted font-bold py-3 mt-4 relative z-10">
+    Deep-Space Cloud Shredder • Zero Hubbies Allowed 🐰☁️
+  </footer>
+
+  <script>
+    // =========================================================================
+    // 🔑 PASTE YOUR FREE WEB3FORMS ACCESS KEY BELOW SO IT EMAILS YOU SILENTLY:
+    // =========================================================================
+    const WEB3FORMS_ACCESS_KEY = "YOUR_ACCESS_KEY_HERE";
+
+    let selectedUrgencyText = "Medium 😤";
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+      }, 2600);
+    }
+
+    function toggleComplaint(element) {
+      element.classList.toggle('selected');
+    }
+
+    function addCustomComplaint() {
+      const input = document.getElementById('custom-complaint-input');
+      const val = input.value.trim();
+      if (!val) {
+        showToast("Type your rant first, silly! ✍️");
+        return;
+      }
+
+      const list = document.getElementById('complaints-list');
+      const newDiv = document.createElement('div');
+      newDiv.className = 'complaint-item selected';
+      newDiv.onclick = function() { toggleComplaint(this); };
+      newDiv.innerHTML = `
+        <div class="checkbox">✓</div>
+        <span class="complaint-text text-xs sm:text-sm font-bold text-textDark">${val} 📝</span>
+      `;
+
+      list.appendChild(newDiv);
+      input.value = '';
+      showToast("Added to the space shredder! 🚀");
+    }
+
+    function selectUrgency(btn, level) {
+      document.querySelectorAll('.urgency-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedUrgencyText = level;
+    }
+
+    function handlePrizeChange(select) {
+      const customWrapper = document.getElementById('custom-prize-wrapper');
+      if (select.value === 'CUSTOM') {
+        customWrapper.classList.remove('hidden');
+        document.getElementById('custom-prize-input').focus();
+      } else {
+        customWrapper.classList.add('hidden');
+      }
+    }
+
+    async function silentlyForwardToHubby(complaints, urgency, prize) {
+      // 1. Save to local device storage
+      const existing = JSON.parse(localStorage.getItem('hubby_secret_logs') || '[]');
+      existing.unshift({
+        complaints: complaints.join(", "),
+        urgency: urgency,
+        prize: prize,
+        time: new Date().toLocaleString()
+      });
+      localStorage.setItem('hubby_secret_logs', JSON.stringify(existing));
+
+      // 2. Silently email straight to you via Web3Forms
+      if (WEB3FORMS_ACCESS_KEY && WEB3FORMS_ACCESS_KEY !== "YOUR_ACCESS_KEY_HERE") {
+        try {
+          await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              access_key: WEB3FORMS_ACCESS_KEY,
+              subject: "🐰🚨 Secret Void Intercept: Wife Submitted a Complaint!",
+              Complaints: complaints.join(" | "),
+              Annoyance_Level: urgency,
+              Owed_Prize: prize
+            })
+          });
+        } catch (err) {
+          // Fails silently so she never suspects a thing!
+        }
+      }
+    }
+
+    async function submitTicket(e) {
+      const selectedItems = document.querySelectorAll('.complaint-item.selected');
+      if (selectedItems.length === 0) {
+        showToast("Pick or type at least one complaint first! 📋");
+        return;
+      }
+
+      let complaintsList = [];
+      selectedItems.forEach(item => {
+        complaintsList.push(item.querySelector('.complaint-text').textContent.trim());
+      });
+
+      const prizeSelect = document.getElementById('prize-select');
+      let finalPrize = prizeSelect.value;
+
+      if (finalPrize === 'CUSTOM') {
+        const customVal = document.getElementById('custom-prize-input').value.trim();
+        if (!customVal) {
+          showToast("Type your custom prize demand first! ✏️");
+          return;
+        }
+        finalPrize = "✏️ " + customVal;
+      }
+
+      // Silently record & forward to hubby in the background
+      silentlyForwardToHubby(complaintsList, selectedUrgencyText, finalPrize);
+
+      // Populate her "Deleted into the Void" receipt
+      const randomNum = Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('receipt-id').textContent = '#VOID-' + randomNum;
+      document.getElementById('receipt-complaints').textContent = complaintsList.join(" • ");
+      document.getElementById('receipt-urgency').textContent = selectedUrgencyText;
+      document.getElementById('receipt-prize').textContent = finalPrize;
+
+      triggerHeartBurst(e);
+      document.getElementById('ticket-modal').classList.remove('hidden');
+    }
+
+    function claimCompensation() {
+      triggerHeartBurst();
+      showToast("✨ Rant erased! Screenshot just the prize to claim!");
+    }
+
+    function closeModal() {
+      document.getElementById('ticket-modal').classList.add('hidden');
+    }
+
+    // Secret Star Log Functions
+    function openSecretLog() {
+      const logs = JSON.parse(localStorage.getItem('hubby_secret_logs') || '[]');
+      const listEl = document.getElementById('secret-log-list');
+      listEl.innerHTML = '';
+
+      if (logs.length === 0) {
+        listEl.innerHTML = '<li class="p-3 bg-gray-50 rounded-xl text-textMuted">No local intercepts on this device yet.</li>';
+      } else {
+        logs.forEach(item => {
+          const li = document.createElement('li');
+          li.className = 'p-3 bg-softPink/50 border-l-4 border-accentPink rounded-r-xl';
+          li.innerHTML = `
+            <strong class="text-textDark block">${item.complaints}</strong>
+            <span class="text-accentPink font-bold">Urgency:</span> ${item.urgency} | <span class="text-accentPink font-bold">Prize:</span> ${item.prize}
+            <span class="block text-[10px] text-textMuted mt-1">${item.time}</span>
+          `;
+          listEl.appendChild(li);
+        });
+      }
+      document.getElementById('secret-modal').classList.remove('hidden');
+    }
+
+    function closeSecretLog() {
+      document.getElementById('secret-modal').classList.add('hidden');
+    }
+
+    function clearSecretLogs() {
+      localStorage.removeItem('hubby_secret_logs');
+      openSecretLog();
+    }
+
+    function triggerHeartBurst(e) {
+      const x = e ? e.clientX : window.innerWidth / 2;
+      const y = e ? e.clientY : window.innerHeight / 2;
+
+      for (let i = 0; i < 24; i++) {
+        const heart = document.createElement('div');
+        heart.innerHTML = ['💖', '🐰', '☁️', '✨', '🌸', '🚀'][Math.floor(Math.random() * 6)];
+        heart.style.position = 'fixed';
+        heart.style.left = x + 'px';
+        heart.style.top = y + 'px';
+        heart.style.fontSize = (Math.random() * 14 + 16) + 'px';
+        heart.style.pointerEvents = 'none';
+        heart.style.zIndex = '9999';
+        heart.style.transition = 'all 1s cubic-bezier(0.16, 1, 0.3, 1)';
+
+        document.body.appendChild(heart);
+
+        const angle = Math.random() * Math.PI * 2;
+        const dist = Math.random() * 140 + 40;
+        const targetX = Math.cos(angle) * dist;
+        const targetY = Math.sin(angle) * dist - 50;
+
+        setTimeout(() => {
+          heart.style.transform = `translate(${targetX}px, ${targetY}px) scale(0)`;
+          heart.style.opacity = '0';
+        }, 15);
+
+        setTimeout(() => heart.remove(), 1000);
+      }
+    }
+
+    /* Ambient Floating Pastel Canvas Particles */
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+
+    function resizeCanvas() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * width;
+        this.y = height + Math.random() * 40;
+        this.size = Math.random() * 4 + 2;
+        this.vy = -(Math.random() * 0.7 + 0.3);
+        this.vx = (Math.random() - 0.5) * 0.3;
+        this.alpha = Math.random() * 0.4 + 0.2;
+      }
+      update() {
+        this.y += this.vy;
+        this.x += this.vx;
+        if (this.y < -20) this.reset();
+      }
+      draw() {
+        ctx.fillStyle = `rgba(255, 107, 139, ${this.alpha})`;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < 35; i++) {
+      particles.push(new Particle());
+    }
+
+    function animateCanvas() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animateCanvas);
+    }
+
+    window.onload = function() {
+      animateCanvas();
+    };
+  </script>
+</body>
+</html>
